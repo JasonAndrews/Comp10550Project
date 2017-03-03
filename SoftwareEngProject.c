@@ -1,9 +1,20 @@
 /*
  ============================================================================
  Name        : SoftwareEngProject.c
- Author      : Jason Andrews
+ Module		 : COMP10550
+ Group		 : 4	
+ Authors     : 
+				Jason Andrews
+				Jeremiah Wangaruro	
+				
  Version     : 0.1
- Description :
+ Description : 	This file contains the code necessary for Assignment Two.
+				Assignment two tasks us with developing the early stages of the game.
+				This includes:
+					Setting up the necessary structs.
+					Setting up the necessary enums.
+					Populating the structs.
+					Implementing some auto character creation.
  ============================================================================
  */
 
@@ -21,6 +32,8 @@
 
 #define 	MAX_NUM_OF_SLOTS	20
 
+
+git clone 
 
 /*
  * To be used in future assignments
