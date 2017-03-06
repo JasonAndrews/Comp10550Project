@@ -5,7 +5,7 @@
  Group		 : 4	
  Authors     : 
 				Jason Andrews
-				Jeremiah Wangaruro	
+				Jeremiah Wangaruro	the cool guy
 				
  Version     : 0.1
  Description : 	This file contains the code necessary for Assignment Two.
