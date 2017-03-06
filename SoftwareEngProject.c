@@ -32,9 +32,6 @@
 
 #define 	MAX_NUM_OF_SLOTS	20
 
-
-git clone 
-
 /*
  * To be used in future assignments
 enum PLAYER_TYPES {
@@ -65,17 +62,17 @@ struct PLAYER {
 * This struct will be used to store	
 * information about each slot
 *
-*
 */
 struct SLOT {
-	//struct PLAYER player;
-	int slotId;
+	struct PLAYER player;
 	enum SLOT_TYPES slotType;
-	int playerId;
-	
 };
 
+// function prototypes
+void setupSlots(unsigned int numSlots, struct SLOT *gameSlots);
+char *getSlotString(enum SLOT_TYPES slotType);
 
+// main function
 int main(void) {
 
 	unsigned int 
@@ -89,8 +86,13 @@ int main(void) {
 	
 	srand((unsigned) time(&currentTime));
 	
+	char name[20];
+	
+	printf("\nEnter a name: ");
+	fgets(name, 20, stdin);
+	
 	do {
-	// prompt for, and capture the number of slots for the game
+		// prompt for, and capture the number of slots for the game
 		printf("\nPlease enter the number of slots for the game (max = %d): ", MAX_NUM_OF_SLOTS);
 		scanf("%d", &numSlots);
 		
@@ -99,17 +101,14 @@ int main(void) {
 		
 	} while (numSlots < 1 || numSlots > MAX_NUM_OF_SLOTS);
 	
+	// allocate the required amount of memory for a numSlots sized array of type struct SLOT
 	gameSlots = (struct SLOT * const) malloc(sizeof(struct SLOT) * numSlots);
 	
+	setupSlots(numSlots, gameSlots);
 	printf("Size of gameSlots = %d | 1 slot = %d\n", sizeof(*gameSlots), sizeof(struct SLOT));
 	
 	for (int i = 0; i < numSlots; i++) {
-		gameSlots[i].slotId = (i + 1);
-		gameSlots[i].slotType = (rand() % 3 /* number of diffent slots.. */) + 1;
-		
-	}
-	for (int i = 0; i < numSlots; i++) {
-		printf("\nSlot index %d = %d, %s", i, gameSlots[i].slotId, (gameSlots[i].slotType == LEVEL_GROUND) ? ("LEVEL_GROUND") : ("NOT LEVEL_GROUND"));
+		printf("\nSlot index %d = %s", i, getSlotString(gameSlots[i].slotType));
 	}
 	
 	printf("\n\nEND OF APP EXECUTION!\n");
@@ -117,3 +116,59 @@ int main(void) {
 	return EXIT_SUCCESS;
 }
 
+
+
+/* Function: 	setupSlots
+ * Description:
+ * 				Set up the array of slots. 
+ *	Parameters:
+ *		numSlots : uint - The size of the array.
+ *
+ *	Returns:
+ *		gameSlots : pointer to struct SLOT - The array of slots (the memory of the first element of the array)
+ */
+void setupSlots(unsigned int numSlots, struct SLOT *gameSlots) {
+	
+	for (int i = 0; i < numSlots; i++) {
+		
+		// assign a different slot type
+		gameSlots[i].slotType = (rand() % 3 /* number of different slots.. */) + 1;
+		
+	}
+	
+}
+
+
+/* Function Name: 	getSlotString
+ * Description:
+ * 				Set up the array of slots. 
+ *	Parameters:
+ *		numSlots : uint - The size of the array.
+ *
+ *	Returns:
+ *		gameSlots : pointer to struct SLOT - The array of slots (the memory of the first element of the array)
+ */
+char* getSlotString(enum SLOT_TYPES slotType) {
+	
+	char *slotString = "";
+	
+	switch (slotType) {
+		case LEVEL_GROUND: {
+			strcpy(slotString, "Level Ground");
+			break;
+		}
+		case HILL: {
+			strcpy(slotString, "Hill");
+			break;
+		}
+		case CITY: {
+			strcpy(slotString, "City");
+			break;
+		}
+		default: {
+			strcpy(slotString, "Invalid..");
+			break;
+		}
+	}
+	return slotString;	
+}
