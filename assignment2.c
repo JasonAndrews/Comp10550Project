@@ -23,13 +23,6 @@ enum type {
 	Ogre,
 	Wizard
 };
-/*struct cap{
-	int Smartness;
-	int Strength;
-	int Magic_skills;
-	int Luck;
-	int Dexterity;
-};*/
 
 struct player {
 	char name[20];
@@ -101,8 +94,6 @@ int main()
 			
 		}while(i<n);
 		
-		printf("%s(%d,%d)", num[0].name, num[0].cap[0],num[0].life_pts);
-		printf("%s(%d,%d)", num[1].name, num[1].cap[0],num[1].life_pts);
 	}
 
 	return 0;
@@ -111,7 +102,8 @@ int main()
 void sortCap(int i)
 {
 	int sum,j;
-	srand(time(NULL));
+	time_t currentTime;
+	srand((unsigned) time(&currentTime));
 	
 	if(num[i].playerType==1)
 			{
