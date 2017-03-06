@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
+#include <stdbool.h>
 
 #define 	PLAYERS_FILE_PATH 	"resources\\players.txt"
 #define 	SLOTS_FILE_PATH 	"resources\\slots.txt"
@@ -32,16 +33,17 @@
 
 #define 	MAX_NUM_OF_SLOTS	20
 
-/*
- * To be used in future assignments
-enum PLAYER_TYPES {
-	INVALID = 0,
-	ELF = 1,
-	HUMAN = 2,
-	OGRE = 3,
-	WIZARD = 4
+#define 	MAX_PTS				100
+
+#define MAX_PLAYERS				6
+
+//values are assigned by default from ranging from 0 to 3 (Elf=0, Human=1,etc.)
+enum type {
+	Elf,
+	Human,
+	Ogre,
+	Wizard
 };
-*/
 
 /*
 * The different types available for a slot
@@ -53,9 +55,14 @@ enum SLOT_TYPES {
 	CITY = 3
 	
 };
-
+/* 
+*	This struct hold the players info
+*/
 struct PLAYER {
-	
+	char name[20];
+	enum type playerType;
+	int life_pts;
+	int cap[5];
 };
 
 /*
@@ -68,9 +75,15 @@ struct SLOT {
 	enum SLOT_TYPES slotType;
 };
 
+//global variable used in sortPlayers (PLANNING ON CHANGING IT FROM A GLOBAL TO A LOCAL SOMEHOW)
+struct PLAYER num[MAX_PLAYERS];
+
+
 // function prototypes
 void setupSlots(unsigned int numSlots, struct SLOT *gameSlots);
 char *getSlotString(enum SLOT_TYPES slotType);
+void sortCap(int i);
+void  sortPlayers();
 
 // main function
 int main(void) {
@@ -86,10 +99,6 @@ int main(void) {
 	
 	srand((unsigned) time(&currentTime));
 	
-	char name[20];
-	
-	printf("\nEnter a name: ");
-	fgets(name, 20, stdin);
 	
 	do {
 		// prompt for, and capture the number of slots for the game
@@ -171,4 +180,140 @@ char* getSlotString(enum SLOT_TYPES slotType) {
 		}
 	}
 	return slotString;	
+}
+/* Function Name: sortPlayers
+ * Description:
+ * 				Set up the struct of players. 
+ *	Parameters:
+ *		N/A
+ *
+ *	Returns:
+ *		N/A
+ */
+void sortPlayers()
+{
+	int i=0,n;
+	int choice;
+	
+	
+	printf("Please enter number of players (max. 6 players)\n");
+	scanf("%d", &n);
+
+	if(n<1||n>6)
+	{
+		printf("ERROR INVALID ENTRY: Please enter a number between 1 and 6");
+	}
+	else
+	{
+		do
+		{
+			
+			
+			printf("\nPlease enter player name (20 characers max.)\n");
+			fgets(num[i].name, 20, stdin);
+			
+			printf("\nPlease select player type\n");
+			printf("1)Elf\n");
+			printf("2)Human\n");
+			printf("3)Ogre\n");
+			printf("4)Wizard\n");
+
+			scanf("%d", &choice);
+
+			switch(choice)
+			{
+			case 1:
+			num[i].playerType=Elf;
+			break;
+
+			case 2:
+			num[i].playerType=Human;
+			break;
+
+			case 3:
+			num[i].playerType=Ogre;
+			break;
+
+			case 4:
+			num[i].playerType=Wizard;
+			break;
+
+			default:
+			printf("ERROR INVALID ENTRY:Please enter a number between 1 and 4");
+			}
+			num[i].life_pts = MAX_PTS;
+			i++;
+			
+			sortCap(i);
+			
+		}while(i<n);
+		
+	}
+}
+/* Function Name: sortCap
+ * Description:
+ * 				Assigns values to the player capabilites. 
+ *	Parameters:
+ *		integer i which represents the player number (i.e. 1st player, 2nd player, etc.)
+ *
+ *	Returns:
+ *		N/A
+ */
+void sortCap(int i)
+{
+	int sum,j;
+	bool found;
+	time_t currentTime;
+	srand((unsigned) time(&currentTime));
+	
+	if(num[i].playerType==1)
+	{
+		while(found)
+		{
+			for(j=0;j<5;j++)
+			{
+				num[i].cap[j]=1+rand()%99;
+				sum+=num[i].cap[i];
+			}
+			
+			if(sum<300)
+			{
+				found;
+			}else{!found;}
+		}
+	}
+		
+	if(num[i].playerType==2)
+	{
+		while(found)
+		{
+			num[i].cap[2]=0;
+			num[i].cap[0]=rand()%20;
+			num[i].cap[1]=80+rand()%20;
+			num[i].cap[4]=80+rand()%20;
+			
+			if((num[i].cap[0]+num[i].cap[3])<50)
+			{
+				found;
+			}else{!found;}
+		}
+	}
+		
+	if(num[i].playerType==0)
+	{
+		num[i].cap[3]=60+rand()%40;
+		num[i].cap[0]=70+rand()%30;
+		num[i].cap[1]=1+rand()%49;
+		num[i].cap[2]=51+rand()%29;
+		num[i].cap[4]=1+rand()%99;
+	}
+	
+	if(num[i].playerType==3)
+	{
+		num[i].cap[3]=50+rand()%50;
+		num[i].cap[0]=90+rand()%10;
+		num[i].cap[1]=1+rand()%19;
+		num[i].cap[2]=80+rand()%20;
+		num[i].cap[4]=1+rand()%99;
+	}
 }
