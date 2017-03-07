@@ -35,7 +35,9 @@
 
 #define 	MAX_PTS				100
 
-#define MAX_PLAYERS				6
+#define 	MAX_PLAYERS				6
+
+#define 	TOTAL_SLOT_TYPES		3
 
 //values are assigned by default from ranging from 0 to 3 (Elf=0, Human=1,etc.)
 enum type {
@@ -71,7 +73,7 @@ struct PLAYER {
 *
 */
 struct SLOT {
-	struct PLAYER player;
+	struct PLAYER *player;
 	enum SLOT_TYPES slotType;
 };
 
@@ -82,14 +84,16 @@ struct PLAYER num[MAX_PLAYERS];
 // function prototypes
 void setupSlots(unsigned int numSlots, struct SLOT *gameSlots);
 char *getSlotString(enum SLOT_TYPES slotType);
+void setPlayerPositions(unsigned int numSlots, struct SLOT *gameSlots, unsigned int numPlayers, struct PLAYER *gamePlayers);
 void sortCap(int i);
-void  sortPlayers();
+void sortPlayers(unsigned int *n);
 
 // main function
 int main(void) {
 
 	unsigned int 
-		numSlots; // the number of slots in the game, entered by the user
+		numSlots, // the number of slots in the game, entered by the user
+		numPlayers; // the number of players in the game, entered by the user
 		
 	struct SLOT
 				*gameSlots; // a pointer to a struct SLOT object (the first one in the array)
@@ -98,6 +102,8 @@ int main(void) {
 			currentTime;
 	
 	srand((unsigned) time(&currentTime));
+	
+	sortPlayers(&numPlayers);
 	
 	
 	do {
@@ -113,12 +119,15 @@ int main(void) {
 	// allocate the required amount of memory for a numSlots sized array of type struct SLOT
 	gameSlots = (struct SLOT * const) malloc(sizeof(struct SLOT) * numSlots);
 	
-	setupSlots(numSlots, gameSlots);
-	printf("Size of gameSlots = %d | 1 slot = %d\n", sizeof(*gameSlots), sizeof(struct SLOT));
+	printf("gameSlots[%d].player = %p", 0, gameSlots[0]);
 	
-	for (int i = 0; i < numSlots; i++) {
-		printf("\nSlot index %d = %s", i, getSlotString(gameSlots[i].slotType));
-	}
+	setupSlots(numSlots, gameSlots);
+	setPlayerPositions(numSlots, gameSlots, numPlayers, num);
+	//printf("Size of gameSlots = %d | 1 slot = %d\n", sizeof(*gameSlots), sizeof(struct SLOT));
+	
+	//for (int i = 0; i < numSlots; i++) {
+	//	printf("\nSlot index %d = %s", i, getSlotString(gameSlots[i].slotType));
+	//}
 	
 	printf("\n\nEND OF APP EXECUTION!\n");
 
@@ -132,17 +141,65 @@ int main(void) {
  * 				Set up the array of slots. 
  *	Parameters:
  *		numSlots : uint - The size of the array.
+ *		gameSlots : pointer to struct SLOT - The array of slots (the memory of the first element of the array)
  *
  *	Returns:
- *		gameSlots : pointer to struct SLOT - The array of slots (the memory of the first element of the array)
+ *		N/A
  */
 void setupSlots(unsigned int numSlots, struct SLOT *gameSlots) {
 	
 	for (int i = 0; i < numSlots; i++) {
 		
 		// assign a different slot type
-		gameSlots[i].slotType = (rand() % 3 /* number of different slots.. */) + 1;
+		gameSlots[i].slotType = (rand() % TOTAL_SLOT_TYPES) + 1;
+		// set the player pointer to NULL
+		gameSlots[i].player = NULL; 
+	}
+	
+}
+
+/* Function Name: 	setPlayerPositions
+ * Description:
+ * 				Place each player into a random slot position.
+ *	Parameters:
+ *		numSlots : uint - The size of the slot array.
+ * 		gameSlots : pointer to struct SLOT - The array of slots (the memory of the first element of the array)
+ * 		numPlayers : uint - The size of the player array.
+ *      gamePlayers : pointer to struct PLAYER - The array of players (the memory of the first element of the array)
+ *
+ *	Returns:
+ *		N/A
+ */
+void setPlayerPositions(unsigned int numSlots, struct SLOT *gameSlots, unsigned int numPlayers, struct PLAYER *gamePlayers) {
+
+	size_t 
+		randIndex, // random index 
+		i; // current player
+
+	bool 
+		placedPlayer = false;
 		
+	// loop numPlayers times (the number of players in the game)
+	for (i = 0; i < numPlayers; i++) {
+		
+		placedPlayer = false; // reset the variable for the current iteration
+		
+		// keep looping until the current player is placed in a slot
+		while (!placedPlayer) {
+			
+			// get a random index
+			randIndex = (rand() % numPlayers);
+						
+			// if the slot has no player already, set the player in the slot
+			if (gameSlots[randIndex].player == NULL) {
+				
+				// update the slots player variable to the address of the current player
+				gameSlots[randIndex].player = &gamePlayers[i];  
+				// update the boolean variable so the loop breaks				
+				placedPlayer = true; 
+				
+			} 
+		}		
 	}
 	
 }
@@ -185,21 +242,22 @@ char* getSlotString(enum SLOT_TYPES slotType) {
  * Description:
  * 				Set up the struct of players. 
  *	Parameters:
- *		N/A
+ *		N/A [Needs to be updated]
  *
  *	Returns:
  *		N/A
  */
-void sortPlayers()
+void sortPlayers(unsigned int *n)
 {
-	int i=0,n;
+	int i = 0;
 	int choice;
 	
 	
+	
 	printf("Please enter number of players (max. 6 players)\n");
-	scanf("%d", &n);
+	scanf("%d", n);
 
-	if(n<1||n>6)
+	if(*n<1||*n>6)
 	{
 		printf("ERROR INVALID ENTRY: Please enter a number between 1 and 6");
 	}
@@ -209,7 +267,9 @@ void sortPlayers()
 		{
 			
 			
-			printf("\nPlease enter player name (20 characers max.)\n");
+			printf("\nPlease enter player name (20 characers max.)\n"); 
+			fflush(stdin); // flush the stdin file
+			fflush(stdout); // flush the stdout file
 			fgets(num[i].name, 20, stdin);
 			
 			printf("\nPlease select player type\n");
@@ -246,7 +306,7 @@ void sortPlayers()
 			
 			sortCap(i);
 			
-		}while(i<n);
+		}while(i<*n);
 		
 	}
 }
