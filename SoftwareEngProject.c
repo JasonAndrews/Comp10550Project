@@ -33,11 +33,27 @@
 
 #define 	MAX_NUM_OF_SLOTS	20
 
-#define 	MAX_PTS				100
+#define 	MAX_PTS 			100
 
+#define 	MAX_PLAYERS			6
+
+/*
+* This is so we known what the values	
+* in the cap[] represent
+*
+*/
+#define 	SMARTNESS 			0
+#define 	STRENGTH 			1
+#define 	MAGIC_SKILLS 		2
+#define 	LUCK 				3
+#define 	DEXTERITY 			4
+
+<<<<<<< Updated upstream
 #define 	MAX_PLAYERS				6
 
 #define 	TOTAL_SLOT_TYPES		3
+=======
+>>>>>>> Stashed changes
 
 //values are assigned by default from ranging from 0 to 3 (Elf=0, Human=1,etc.)
 enum type {
@@ -238,7 +254,7 @@ char* getSlotString(enum SLOT_TYPES slotType) {
 	}
 	return slotString;	
 }
-/* Function Name: sortPlayers
+/* Function Name: 	sortPlayers
  * Description:
  * 				Set up the struct of players. 
  *	Parameters:
@@ -310,7 +326,7 @@ void sortPlayers(unsigned int *n)
 		
 	}
 }
-/* Function Name: sortCap
+/* Function Name: 	sortCap
  * Description:
  * 				Assigns values to the player capabilites. 
  *	Parameters:
@@ -326,7 +342,7 @@ void sortCap(int i)
 	time_t currentTime;
 	srand((unsigned) time(&currentTime));
 	
-	if(num[i].playerType==1)
+	if(num[i].playerType==1) //MESSAGE ALERT: Just wondering how to represent this so we know it refers to Human in the enum type.
 	{
 		while(found)
 		{
@@ -347,12 +363,12 @@ void sortCap(int i)
 	{
 		while(found)
 		{
-			num[i].cap[2]=0;
-			num[i].cap[0]=rand()%20;
-			num[i].cap[1]=80+rand()%20;
-			num[i].cap[4]=80+rand()%20;
+			num[i].cap[MAGIC_SKILLS]=0;
+			num[i].cap[SMARTNESS]=rand()%20;
+			num[i].cap[STRENGTH]=80+rand()%20;
+			num[i].cap[DEXTERITY]=80+rand()%20;
 			
-			if((num[i].cap[0]+num[i].cap[3])<50)
+			if((num[i].cap[LUCK]+num[i].cap[SMARTNESS])<=50)
 			{
 				found;
 			}else{!found;}
@@ -361,19 +377,19 @@ void sortCap(int i)
 		
 	if(num[i].playerType==0)
 	{
-		num[i].cap[3]=60+rand()%40;
-		num[i].cap[0]=70+rand()%30;
-		num[i].cap[1]=1+rand()%49;
-		num[i].cap[2]=51+rand()%29;
-		num[i].cap[4]=1+rand()%99;
+		num[i].cap[LUCK]=60+rand()%40;
+		num[i].cap[SMARTNESS]=70+rand()%30;
+		num[i].cap[STRENGTH]=1+rand()%49;
+		num[i].cap[MAGIC_SKILLS]=51+rand()%29;
+		num[i].cap[DEXTERITY]=1+rand()%99;
 	}
 	
 	if(num[i].playerType==3)
 	{
-		num[i].cap[3]=50+rand()%50;
-		num[i].cap[0]=90+rand()%10;
-		num[i].cap[1]=1+rand()%19;
-		num[i].cap[2]=80+rand()%20;
-		num[i].cap[4]=1+rand()%99;
+		num[i].cap[LUCK]=50+rand()%50;
+		num[i].cap[SMARTNESS]=90+rand()%10;
+		num[i].cap[STRENGTH]=1+rand()%19;
+		num[i].cap[MAGIC_SKILLS]=80+rand()%20;
+		num[i].cap[DEXTERITY]=1+rand()%99;
 	}
 }
