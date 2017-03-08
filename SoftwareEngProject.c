@@ -103,14 +103,19 @@ struct PLAYER num[MAX_PLAYERS];
 void setupSlots(unsigned int numSlots, struct SLOT *gameSlots);
 char *getSlotString(enum SLOT_TYPES slotType);
 void sortCap(int i);
-void  sortPlayers();
+void sortPlayers();
 int getCapabilitySum(struct PLAYER *player);
+void nextTurn(int position, struct PLAYER *player);
 
 // main function
 int main(void) {
 
+	size_t 
+		i;
 	unsigned int 
-		numSlots; // the number of slots in the game, entered by the user
+		numSlots, // the number of slots in the game, entered by the user
+		numPlayers, // the number of players in the game, entered by the user
+		turnChoice; // the 
 		
 	struct SLOT
 				*gameSlots; // a pointer to a struct SLOT object (the first one in the array)
@@ -120,7 +125,7 @@ int main(void) {
 	
 	srand((unsigned) time(&currentTime));
 	
-	sortPlayers();
+	sortPlayers(&numPlayers);
 	
 	
 	do {
@@ -137,11 +142,11 @@ int main(void) {
 	gameSlots = (struct SLOT * const) malloc(sizeof(struct SLOT) * numSlots);
 	
 	setupSlots(numSlots, gameSlots);
-	//printf("Size of gameSlots = %d | 1 slot = %d\n", sizeof(*gameSlots), sizeof(struct SLOT));
-	
-	//for (int i = 0; i < numSlots; i++) {
-	//	printf("\nSlot index %d = %s", i, getSlotString(gameSlots[i].slotType));
-	//}
+
+	// start the game - Player1 -> PlayerN will have a turn
+	for (i = 0; i < numPlayers; i++) {		
+		nextTurn(0, &num[i]);
+	}
 	
 	printf("\n\nEND OF APP EXECUTION!\n");
 
@@ -213,16 +218,20 @@ char* getSlotString(enum SLOT_TYPES slotType) {
  *	Returns:
  *		N/A
  */
-void sortPlayers()
+void sortPlayers(int *numPlayers)
 {
-	int i=0,n;
+	int 
+		i=0,
+		j=0;
+	char 
+		ch;
 	int choice;
 	
 	
 	printf("Please enter number of players (max. 6 players)\n");
-	scanf("%d", &n);
+	scanf("%d", numPlayers);
 
-	if(n<1||n>6)
+	if(*numPlayers<1 || *numPlayers>MAX_PLAYERS)
 	{
 		printf("ERROR INVALID ENTRY: Please enter a number between 1 and 6");
 	}
@@ -236,6 +245,16 @@ void sortPlayers()
 			fflush(stdin);
 			fflush(stdout);
 			fgets(num[i].name, 20, stdin);
+			// remove the NEWLINE character from the player's name.
+			
+			for(j = 0; num[i].name[j] != '\0'; j++) { 
+				
+				if (num[i].name[j] == '\n') {
+					num[i].name[j] = '\0'; // set 
+					break;
+				}
+			}
+				
 			
 			printf("\nPlease select player type\n");
 			printf("1)Elf\n");
@@ -275,7 +294,7 @@ void sortPlayers()
 				sortCap(i);			
 			}
 			
-		} while(i<n);
+		} while(i < *numPlayers);
 		
 	}
 }
@@ -357,3 +376,43 @@ int getCapabilitySum(struct PLAYER *player) {
 
 	return capSum;
 }
+
+/* Function Name: nextTurn
+ * Description:
+ * 				
+ *	Parameters:
+ *		
+ *
+ *	Returns:
+ *		N/A
+ */
+void nextTurn(int position, struct PLAYER *player) {
+	
+	// used in Move()
+	size_t	
+		i,
+		currentPosition;
+	
+	// used in Attack()
+	unsigned int 
+		turnChoice,
+		distToNextPlayer;
+
+	
+	printf("\n%s - it is your turn.\nWhat do you want to do?\n1. Attack.\n2. Move.\nYour choice: ", player->name);
+	
+	scanf("%d", &turnChoice);
+	
+	switch (turnChoice) {
+		
+		case 1: {
+			//Attack();
+			break;
+		}
+		case 2: {
+			//Move();
+			break;
+		}
+	}
+	
+} // end of nextTurn() function
