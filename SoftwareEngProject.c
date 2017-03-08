@@ -33,27 +33,9 @@
 
 #define 	MAX_NUM_OF_SLOTS	20
 
-#define 	MAX_PTS 			100
+#define 	MAX_PTS				100
 
-#define 	MAX_PLAYERS			6
-
-/*
-* This is so we known what the values	
-* in the cap[] represent
-*
-*/
-#define 	SMARTNESS 			0
-#define 	STRENGTH 			1
-#define 	MAGIC_SKILLS 		2
-#define 	LUCK 				3
-#define 	DEXTERITY 			4
-
-<<<<<<< Updated upstream
-#define 	MAX_PLAYERS				6
-
-#define 	TOTAL_SLOT_TYPES		3
-=======
->>>>>>> Stashed changes
+#define MAX_PLAYERS				6
 
 //values are assigned by default from ranging from 0 to 3 (Elf=0, Human=1,etc.)
 enum type {
@@ -73,6 +55,26 @@ enum SLOT_TYPES {
 	CITY = 3
 	
 };
+
+/* 
+*	This struct hold the players capabilities info
+	
+	Capabilities: 
+		Smartness, 
+		Strength, 
+		Magic Skills, 
+		Luck,
+		Dexterity
+*/
+struct PLAYER_CAPABILITIES {
+	int 
+		smartness,
+		strength,
+		magicSkills,
+		luck,
+		dexterity;
+};
+
 /* 
 *	This struct hold the players info
 */
@@ -80,7 +82,7 @@ struct PLAYER {
 	char name[20];
 	enum type playerType;
 	int life_pts;
-	int cap[5];
+	struct PLAYER_CAPABILITIES caps;
 };
 
 /*
@@ -89,7 +91,7 @@ struct PLAYER {
 *
 */
 struct SLOT {
-	struct PLAYER *player;
+	struct PLAYER player;
 	enum SLOT_TYPES slotType;
 };
 
@@ -100,16 +102,15 @@ struct PLAYER num[MAX_PLAYERS];
 // function prototypes
 void setupSlots(unsigned int numSlots, struct SLOT *gameSlots);
 char *getSlotString(enum SLOT_TYPES slotType);
-void setPlayerPositions(unsigned int numSlots, struct SLOT *gameSlots, unsigned int numPlayers, struct PLAYER *gamePlayers);
 void sortCap(int i);
-void sortPlayers(unsigned int *n);
+void  sortPlayers();
+int getCapabilitySum(struct PLAYER *player);
 
 // main function
 int main(void) {
 
 	unsigned int 
-		numSlots, // the number of slots in the game, entered by the user
-		numPlayers; // the number of players in the game, entered by the user
+		numSlots; // the number of slots in the game, entered by the user
 		
 	struct SLOT
 				*gameSlots; // a pointer to a struct SLOT object (the first one in the array)
@@ -119,7 +120,7 @@ int main(void) {
 	
 	srand((unsigned) time(&currentTime));
 	
-	sortPlayers(&numPlayers);
+	sortPlayers();
 	
 	
 	do {
@@ -135,10 +136,7 @@ int main(void) {
 	// allocate the required amount of memory for a numSlots sized array of type struct SLOT
 	gameSlots = (struct SLOT * const) malloc(sizeof(struct SLOT) * numSlots);
 	
-	printf("gameSlots[%d].player = %p", 0, gameSlots[0]);
-	
 	setupSlots(numSlots, gameSlots);
-	setPlayerPositions(numSlots, gameSlots, numPlayers, num);
 	//printf("Size of gameSlots = %d | 1 slot = %d\n", sizeof(*gameSlots), sizeof(struct SLOT));
 	
 	//for (int i = 0; i < numSlots; i++) {
@@ -157,65 +155,17 @@ int main(void) {
  * 				Set up the array of slots. 
  *	Parameters:
  *		numSlots : uint - The size of the array.
- *		gameSlots : pointer to struct SLOT - The array of slots (the memory of the first element of the array)
  *
  *	Returns:
- *		N/A
+ *		gameSlots : pointer to struct SLOT - The array of slots (the memory of the first element of the array)
  */
 void setupSlots(unsigned int numSlots, struct SLOT *gameSlots) {
 	
 	for (int i = 0; i < numSlots; i++) {
 		
 		// assign a different slot type
-		gameSlots[i].slotType = (rand() % TOTAL_SLOT_TYPES) + 1;
-		// set the player pointer to NULL
-		gameSlots[i].player = NULL; 
-	}
-	
-}
-
-/* Function Name: 	setPlayerPositions
- * Description:
- * 				Place each player into a random slot position.
- *	Parameters:
- *		numSlots : uint - The size of the slot array.
- * 		gameSlots : pointer to struct SLOT - The array of slots (the memory of the first element of the array)
- * 		numPlayers : uint - The size of the player array.
- *      gamePlayers : pointer to struct PLAYER - The array of players (the memory of the first element of the array)
- *
- *	Returns:
- *		N/A
- */
-void setPlayerPositions(unsigned int numSlots, struct SLOT *gameSlots, unsigned int numPlayers, struct PLAYER *gamePlayers) {
-
-	size_t 
-		randIndex, // random index 
-		i; // current player
-
-	bool 
-		placedPlayer = false;
+		gameSlots[i].slotType = (rand() % 3 /* number of different slots.. */) + 1;
 		
-	// loop numPlayers times (the number of players in the game)
-	for (i = 0; i < numPlayers; i++) {
-		
-		placedPlayer = false; // reset the variable for the current iteration
-		
-		// keep looping until the current player is placed in a slot
-		while (!placedPlayer) {
-			
-			// get a random index
-			randIndex = (rand() % numPlayers);
-						
-			// if the slot has no player already, set the player in the slot
-			if (gameSlots[randIndex].player == NULL) {
-				
-				// update the slots player variable to the address of the current player
-				gameSlots[randIndex].player = &gamePlayers[i];  
-				// update the boolean variable so the loop breaks				
-				placedPlayer = true; 
-				
-			} 
-		}		
 	}
 	
 }
@@ -254,26 +204,25 @@ char* getSlotString(enum SLOT_TYPES slotType) {
 	}
 	return slotString;	
 }
-/* Function Name: 	sortPlayers
+/* Function Name: sortPlayers
  * Description:
  * 				Set up the struct of players. 
  *	Parameters:
- *		N/A [Needs to be updated]
+ *		N/A
  *
  *	Returns:
  *		N/A
  */
-void sortPlayers(unsigned int *n)
+void sortPlayers()
 {
-	int i = 0;
+	int i=0,n;
 	int choice;
 	
 	
-	
 	printf("Please enter number of players (max. 6 players)\n");
-	scanf("%d", n);
+	scanf("%d", &n);
 
-	if(*n<1||*n>6)
+	if(n<1||n>6)
 	{
 		printf("ERROR INVALID ENTRY: Please enter a number between 1 and 6");
 	}
@@ -283,9 +232,9 @@ void sortPlayers(unsigned int *n)
 		{
 			
 			
-			printf("\nPlease enter player name (20 characers max.)\n"); 
-			fflush(stdin); // flush the stdin file
-			fflush(stdout); // flush the stdout file
+			printf("\nPlease enter player name (20 characers max.)\n");
+			fflush(stdin);
+			fflush(stdout);
 			fgets(num[i].name, 20, stdin);
 			
 			printf("\nPlease select player type\n");
@@ -317,16 +266,20 @@ void sortPlayers(unsigned int *n)
 			default:
 			printf("ERROR INVALID ENTRY:Please enter a number between 1 and 4");
 			}
-			num[i].life_pts = MAX_PTS;
-			i++;
 			
-			sortCap(i);
+			if (choice >= 1 && choice <= 4) {
+				
+				num[i].life_pts = MAX_PTS;
+				i++;		
+				
+				sortCap(i);			
+			}
 			
-		}while(i<*n);
+		} while(i<n);
 		
 	}
 }
-/* Function Name: 	sortCap
+/* Function Name: sortCap
  * Description:
  * 				Assigns values to the player capabilites. 
  *	Parameters:
@@ -338,58 +291,69 @@ void sortPlayers(unsigned int *n)
 void sortCap(int i)
 {
 	int sum,j;
-	bool found;
+	bool valid;
 	time_t currentTime;
 	srand((unsigned) time(&currentTime));
 	
-	if(num[i].playerType==1) //MESSAGE ALERT: Just wondering how to represent this so we know it refers to Human in the enum type.
+	if(num[i].playerType==1)
 	{
-		while(found)
-		{
-			for(j=0;j<5;j++)
-			{
-				num[i].cap[j]=1+rand()%99;
-				sum+=num[i].cap[i];
-			}
+		do {
+			
+			sum = getCapabilitySum(&num[i]);
 			
 			if(sum<300)
-			{
-				found;
-			}else{!found;}
-		}
+				valid = true;
+			else 
+				valid = false;
+			
+		} while (!valid);
 	}
 		
 	if(num[i].playerType==2)
 	{
-		while(found)
+		do
 		{
-			num[i].cap[MAGIC_SKILLS]=0;
-			num[i].cap[SMARTNESS]=rand()%20;
-			num[i].cap[STRENGTH]=80+rand()%20;
-			num[i].cap[DEXTERITY]=80+rand()%20;
+			num[i].caps.magicSkills=0;
+			num[i].caps.smartness=rand()%20;
+			num[i].caps.strength=80+rand()%20;
+			num[i].caps.dexterity=80+rand()%20;
 			
-			if((num[i].cap[LUCK]+num[i].cap[SMARTNESS])<=50)
-			{
-				found;
-			}else{!found;}
-		}
+			if((num[i].caps.smartness+num[i].caps.luck)<50)
+				valid = true;
+			else
+				!valid;
+			
+		}while(!valid);
 	}
 		
 	if(num[i].playerType==0)
 	{
-		num[i].cap[LUCK]=60+rand()%40;
-		num[i].cap[SMARTNESS]=70+rand()%30;
-		num[i].cap[STRENGTH]=1+rand()%49;
-		num[i].cap[MAGIC_SKILLS]=51+rand()%29;
-		num[i].cap[DEXTERITY]=1+rand()%99;
+		num[i].caps.luck=60+rand()%40;
+		num[i].caps.smartness=70+rand()%30;
+		num[i].caps.strength=1+rand()%49;
+		num[i].caps.magicSkills=51+rand()%29;
+		num[i].caps.dexterity=1+rand()%99;
 	}
 	
 	if(num[i].playerType==3)
 	{
-		num[i].cap[LUCK]=50+rand()%50;
-		num[i].cap[SMARTNESS]=90+rand()%10;
-		num[i].cap[STRENGTH]=1+rand()%19;
-		num[i].cap[MAGIC_SKILLS]=80+rand()%20;
-		num[i].cap[DEXTERITY]=1+rand()%99;
+		num[i].caps.luck=50+rand()%50;
+		num[i].caps.smartness=90+rand()%10;
+		num[i].caps.strength=1+rand()%19;
+		num[i].caps.magicSkills=80+rand()%20;
+		num[i].caps.dexterity=1+rand()%99;
 	}
+}
+
+int getCapabilitySum(struct PLAYER *player) {
+	
+	int capSum = 0;
+	
+	capSum += player->caps.smartness;
+	capSum += player->caps.strength;
+	capSum += player->caps.magicSkills;
+	capSum += player->caps.luck;
+	capSum += player->caps.dexterity;
+
+	return capSum;
 }
