@@ -83,6 +83,7 @@ struct PLAYER {
 	enum type playerType;
 	int life_pts;
 	struct PLAYER_CAPABILITIES caps;
+	int position;
 };
 
 /*
@@ -91,7 +92,7 @@ struct PLAYER {
 *
 */
 struct SLOT {
-	struct PLAYER player;
+	struct PLAYER *player;
 	enum SLOT_TYPES slotType;
 };
 
@@ -102,10 +103,12 @@ struct PLAYER num[MAX_PLAYERS];
 // function prototypes
 void setupSlots(unsigned int numSlots, struct SLOT *gameSlots);
 char *getSlotString(enum SLOT_TYPES slotType);
+void setPlayerPositions(unsigned int numSlots, struct SLOT *gameSlots, unsigned int numPlayers, struct PLAYER *gamePlayers);
 void sortCap(int i);
 void sortPlayers();
 int getCapabilitySum(struct PLAYER *player);
-void nextTurn(int position, struct PLAYER *player);
+void nextTurn(unsigned int numSlots, struct SLOT *gameSlots, struct PLAYER *player);
+void move(unsigned int numSlots, struct SLOT *gameSlots, struct PLAYER *player);
 
 // main function
 int main(void) {
@@ -142,10 +145,10 @@ int main(void) {
 	gameSlots = (struct SLOT * const) malloc(sizeof(struct SLOT) * numSlots);
 	
 	setupSlots(numSlots, gameSlots);
-
+	setPlayerPositions(numSlots, gameSlots, numPlayers, num);
 	// start the game - Player1 -> PlayerN will have a turn
 	for (i = 0; i < numPlayers; i++) {		
-		nextTurn(0, &num[i]);
+		nextTurn(numSlots, gameSlots, &num[i]);
 	}
 	
 	printf("\n\nEND OF APP EXECUTION!\n");
@@ -170,10 +173,12 @@ void setupSlots(unsigned int numSlots, struct SLOT *gameSlots) {
 		
 		// assign a different slot type
 		gameSlots[i].slotType = (rand() % 3 /* number of different slots.. */) + 1;
-		
+		gameSlots[i].player = NULL; 
 	}
 	
 }
+
+
 
 
 /* Function Name: 	getSlotString
@@ -218,6 +223,56 @@ char* getSlotString(enum SLOT_TYPES slotType) {
  *	Returns:
  *		N/A
  */
+ 
+ 
+/* Function Name: 	setPlayerPositions
+ * Description:
+ * 				Place each player into a random slot position.
+ *	Parameters:
+ *		numSlots : uint - The size of the slot array.
+ * 		gameSlots : pointer to struct SLOT - The array of slots (the memory of the first element of the array)
+ * 		numPlayers : uint - The size of the player array.
+ *      gamePlayers : pointer to struct PLAYER - The array of players (the memory of the first element of the array)
+ *
+ *	Returns:
+ *		N/A
+ */
+void setPlayerPositions(unsigned int numSlots, struct SLOT *gameSlots, unsigned int numPlayers, struct PLAYER *gamePlayers) {
+
+	size_t 
+		randIndex, // random index 
+		i; // current player
+
+	bool 
+		placedPlayer = false;
+		
+	// loop numPlayers times (the number of players in the game)
+	for (i = 0; i < numPlayers; i++) {
+		
+		placedPlayer = false; // reset the variable for the current iteration
+		
+		// keep looping until the current player is placed in a slot
+		while (!placedPlayer) {
+			
+			// get a random index
+			randIndex = (rand() % numSlots);
+						
+			// if the slot has no player already, set the player in the slot
+			if (gameSlots[randIndex].player == NULL) {
+				
+				// update the slots player variable to the address of the current player
+				gameSlots[randIndex].player = &gamePlayers[i];  
+				// update the boolean variable so the loop breaks				
+				placedPlayer = true; 
+				gamePlayers[i].position = randIndex;
+				
+			} 
+		}		
+	}
+	
+}
+
+
 void sortPlayers(int *numPlayers)
 {
 	int 
@@ -356,6 +411,7 @@ void sortCap(int i)
 	
 	if(num[i].playerType==3)
 	{
+		
 		num[i].caps.luck=50+rand()%50;
 		num[i].caps.smartness=90+rand()%10;
 		num[i].caps.strength=1+rand()%19;
@@ -386,7 +442,7 @@ int getCapabilitySum(struct PLAYER *player) {
  *	Returns:
  *		N/A
  */
-void nextTurn(int position, struct PLAYER *player) {
+void nextTurn(unsigned int numSlots, struct SLOT *gameSlots, struct PLAYER *player) {
 	
 	// used in Move()
 	size_t	
@@ -409,10 +465,106 @@ void nextTurn(int position, struct PLAYER *player) {
 			//Attack();
 			break;
 		}
-		case 2: {
-			//Move();
+		case 2: {	
+			move(numSlots, gameSlots, player);
 			break;
 		}
 	}
 	
 } // end of nextTurn() function
+
+
+/* Function Name: move
+ * Description:
+ * 				
+ *	Parameters:
+ *		
+ *
+ *	Returns:
+ *		N/A
+ */
+void move(unsigned int numSlots, struct SLOT *gameSlots, struct PLAYER *player) {
+	
+	// used in Move()
+	size_t	
+		i,
+		currentPosition;
+	
+	// used in Attack()
+	unsigned int 
+		completedMove,
+		moveChoice,
+		distToNextPlayer;
+
+	for (i = 0; i < numSlots; i++) {
+		//printf("\ngameSlots[i].player = %p | player = %p", gameSlots[i].player, player);
+		if (gameSlots[i].player == player) {
+			currentPosition = i;
+			printf("\nCurrent Position for %s is %d.", gameSlots[i].player->name, i);
+			break;
+		}
+	}
+	
+	do {
+	currentPosition = player->position;
+	printf("\n%s, your location is %d. Please select a direction.\n1. Forward.\n2. Backward\nYour choice: ", player->name, player->position);
+	
+	scanf("%d", &moveChoice);
+	
+		switch (moveChoice) {
+			
+			case 1: {
+				// move forward
+				if (player->position == (numSlots - 1)) {
+					printf("Sorry, you cannot move forward!");
+					break;
+				}
+				
+				// check if the next slot is empty
+				if (gameSlots[(currentPosition + 1)].player == NULL)  {
+					
+					player->position++;
+					printf("\n%s, you moved forward to location %d.", player->name, player->position);
+					
+					gameSlots[player->position].player = player;
+					gameSlots[currentPosition].player = NULL;
+					
+					completedMove = true;
+					//updateCapabilities();
+				} else {
+					// the slot has a player already
+					printf("\nYou cannot move to that position because another player is already there!\n");
+				}
+				
+				break;
+			}
+			case 2: {
+				// move backward
+				if (player->position == 0) {
+					printf("Sorry, you cannot move backwards!");
+					break;
+				}
+				
+				// check if the previous slot is empty
+				if (gameSlots[(currentPosition - 1)].player == NULL)  {
+					
+					player->position--;
+					printf("\n%s, you moved backwards to location %d.", player->name, player->position);
+					
+					gameSlots[player->position].player = player;
+					gameSlots[currentPosition].player = NULL;
+					
+					completedMove = true;
+					//updateCapabilities();
+				} else {
+					// the slot has a player already
+					printf("\nYou cannot move to that position because another player is already there!\n");
+					
+				}
+				
+				break;
+			}
+		}
+	} while (!completedMove);
+	
+} // end of move() function
