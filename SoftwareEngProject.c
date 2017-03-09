@@ -109,6 +109,7 @@ void sortPlayers();
 int getCapabilitySum(struct PLAYER *player);
 void nextTurn(unsigned int numSlots, struct SLOT *gameSlots, struct PLAYER *player);
 void move(unsigned int numSlots, struct SLOT *gameSlots, struct PLAYER *player);
+void updateCapabilities(struct SLOT *gameSlots, struct PLAYER *player, size_t nextSlotType);
 
 // main function
 int main(void) {
@@ -149,6 +150,12 @@ int main(void) {
 	// start the game - Player1 -> PlayerN will have a turn
 	for (i = 0; i < numPlayers; i++) {		
 		nextTurn(numSlots, gameSlots, &num[i]);
+	}
+	
+	// print out the each player's name and hitpoints
+	for (i = 0; i < numPlayers; i++) {
+		printf("\n%d | (%s, %d, %d, %d, %d, %d, %d)", (i+1), num[i].name, num[i].life_pts, 
+			num[i].caps.smartness, num[i].caps.strength, num[i].caps.magicSkills, num[i].caps.luck, num[i].caps.dexterity);
 	}
 	
 	printf("\n\nEND OF APP EXECUTION!\n");
@@ -266,6 +273,8 @@ void setPlayerPositions(unsigned int numSlots, struct SLOT *gameSlots, unsigned 
 				placedPlayer = true; 
 				gamePlayers[i].position = randIndex;
 				
+				updateCapabilities(gameSlots, &gamePlayers[i], gamePlayers[i].position);
+				
 			} 
 		}		
 	}
@@ -300,16 +309,14 @@ void sortPlayers(int *numPlayers)
 			fflush(stdin);
 			fflush(stdout);
 			fgets(num[i].name, 20, stdin);
-			// remove the NEWLINE character from the player's name.
 			
-			for(j = 0; num[i].name[j] != '\0'; j++) { 
-				
+			// remove the NEWLINE character from the player's name.
+			for(j = 0; num[i].name[j] != '\0'; j++) { 				
 				if (num[i].name[j] == '\n') {
-					num[i].name[j] = '\0'; // set 
+					num[i].name[j] = '\0'; // set the current character as the EOS character
 					break;
 				}
-			}
-				
+			}			
 			
 			printf("\nPlease select player type\n");
 			printf("1)Elf\n");
@@ -343,10 +350,11 @@ void sortPlayers(int *numPlayers)
 			
 			if (choice >= 1 && choice <= 4) {
 				
-				num[i].life_pts = MAX_PTS;
-				i++;		
+				num[i].life_pts = MAX_PTS;				
 				
 				sortCap(i);			
+				
+				i++;
 			}
 			
 		} while(i < *numPlayers);
@@ -355,7 +363,7 @@ void sortPlayers(int *numPlayers)
 }
 /* Function Name: sortCap
  * Description:
- * 				Assigns values to the player capabilites. 
+ * 				Assigns values to the player capabilities. 
  *	Parameters:
  *		integer i which represents the player number (i.e. 1st player, 2nd player, etc.)
  *
@@ -369,13 +377,19 @@ void sortCap(int i)
 	time_t currentTime;
 	srand((unsigned) time(&currentTime));
 	
-	if(num[i].playerType==1)
+	if(num[i].playerType==Human)
 	{
 		do {
 			
+			num[i].caps.smartness = 1 + (rand() % 100);
+			num[i].caps.luck = 1 + (rand() % 100);
+			num[i].caps.strength = 1 + (rand() % 100);
+			num[i].caps.magicSkills = 1 + (rand() % 100);
+			num[i].caps.dexterity= 1 + (rand() % 100);
+			
 			sum = getCapabilitySum(&num[i]);
 			
-			if(sum<300)
+			if(sum < 300)
 				valid = true;
 			else 
 				valid = false;
@@ -383,40 +397,40 @@ void sortCap(int i)
 		} while (!valid);
 	}
 		
-	if(num[i].playerType==2)
+	if(num[i].playerType==Ogre)
 	{
 		do
 		{
-			num[i].caps.magicSkills=0;
-			num[i].caps.smartness=rand()%20;
-			num[i].caps.strength=80+rand()%20;
-			num[i].caps.dexterity=80+rand()%20;
+			num[i].caps.magicSkills = 0;
+			num[i].caps.smartness = rand()%20;
+			num[i].caps.strength = 80+rand()%20;
+			num[i].caps.dexterity = 80+rand()%20;
 			
-			if((num[i].caps.smartness+num[i].caps.luck)<50)
+			if((num[i].caps.smartness + num[i].caps.luck) < 50)
 				valid = true;
 			else
-				!valid;
+				valid = !false;
 			
-		}while(!valid);
+		} while(!valid);
 	}
 		
-	if(num[i].playerType==0)
+	if(num[i].playerType==Elf)
 	{
-		num[i].caps.luck=60+rand()%40;
-		num[i].caps.smartness=70+rand()%30;
-		num[i].caps.strength=1+rand()%49;
-		num[i].caps.magicSkills=51+rand()%29;
-		num[i].caps.dexterity=1+rand()%99;
+		num[i].caps.luck = 60+rand()%40;
+		num[i].caps.smartness = 70+rand()%30;
+		num[i].caps.strength = 1+rand()%49;
+		num[i].caps.magicSkills = 51+rand()%29;
+		num[i].caps.dexterity = 1+rand()%99;
 	}
 	
-	if(num[i].playerType==3)
+	if(num[i].playerType==Wizard)
 	{
 		
-		num[i].caps.luck=50+rand()%50;
-		num[i].caps.smartness=90+rand()%10;
-		num[i].caps.strength=1+rand()%19;
-		num[i].caps.magicSkills=80+rand()%20;
-		num[i].caps.dexterity=1+rand()%99;
+		num[i].caps.luck = 50+rand()%50;
+		num[i].caps.smartness = 90+rand()%10;
+		num[i].caps.strength = 1+rand()%19;
+		num[i].caps.magicSkills = 80+rand()%20;
+		num[i].caps.dexterity = 1+rand()%99;
 	}
 }
 
@@ -506,10 +520,11 @@ void move(unsigned int numSlots, struct SLOT *gameSlots, struct PLAYER *player) 
 	}
 	
 	do {
-	currentPosition = player->position;
-	printf("\n%s, your location is %d. Please select a direction.\n1. Forward.\n2. Backward\nYour choice: ", player->name, player->position);
-	
-	scanf("%d", &moveChoice);
+		
+		currentPosition = player->position;
+		printf("\n%s, your location is %d. Please select a direction.\n1. Forward.\n2. Backward\nYour choice: ", player->name, player->position);
+		
+		scanf("%d", &moveChoice);
 	
 		switch (moveChoice) {
 			
@@ -523,6 +538,8 @@ void move(unsigned int numSlots, struct SLOT *gameSlots, struct PLAYER *player) 
 				// check if the next slot is empty
 				if (gameSlots[(currentPosition + 1)].player == NULL)  {
 					
+					updateCapabilities(gameSlots, player, (player->position + 1));
+					
 					player->position++;
 					printf("\n%s, you moved forward to location %d.", player->name, player->position);
 					
@@ -530,7 +547,7 @@ void move(unsigned int numSlots, struct SLOT *gameSlots, struct PLAYER *player) 
 					gameSlots[currentPosition].player = NULL;
 					
 					completedMove = true;
-					//updateCapabilities();
+					
 				} else {
 					// the slot has a player already
 					printf("\nYou cannot move to that position because another player is already there!\n");
@@ -547,6 +564,8 @@ void move(unsigned int numSlots, struct SLOT *gameSlots, struct PLAYER *player) 
 				
 				// check if the previous slot is empty
 				if (gameSlots[(currentPosition - 1)].player == NULL)  {
+					
+					updateCapabilities(gameSlots, player, (player->position - 1));
 					
 					player->position--;
 					printf("\n%s, you moved backwards to location %d.", player->name, player->position);
@@ -568,3 +587,90 @@ void move(unsigned int numSlots, struct SLOT *gameSlots, struct PLAYER *player) 
 	} while (!completedMove);
 	
 } // end of move() function
+
+/* Function Name: updateCapabilities
+ * Description:
+ * 				
+ *	Parameters:
+ *		
+ *
+ *	Returns:
+ *		N/A
+ */
+void updateCapabilities(struct SLOT *gameSlots, struct PLAYER *player, size_t nextSlotIndex) {
+	
+	enum SLOT_TYPES 
+			prevSlotType,
+			nextSlotType;
+	
+	prevSlotType = gameSlots[(player->position)].slotType;
+	nextSlotType = gameSlots[nextSlotIndex].slotType;
+		
+		
+	// reset the players capabilities only if they came from a DIFFERENT slot type
+	if (nextSlotType != prevSlotType) {
+		// depending on the next slot type the player will enter, update their capabilities to their previous state
+		switch (prevSlotType) {
+			case HILL: {
+				
+				if (player->caps.dexterity < 50) 
+					player->caps.strength += 10;
+				else if (player->caps.dexterity >= 60)
+					player->caps.strength -= 10;
+				
+				break;
+			}
+			case CITY: {
+				
+				if (player->caps.smartness > 60)					
+					player->caps.magicSkills -= 10;
+				else if (player->caps.smartness <= 50)
+					player->caps.dexterity += 10;
+				
+				break;
+			}
+		}
+	}
+
+	// update the players capabilities if they move to a DIFFERENT slot type
+	if (nextSlotType != prevSlotType) {
+		
+		// depending on the next slot type the player will enter, update their capabilities
+		switch (nextSlotType) {
+			case HILL: {
+				
+				if (player->caps.dexterity < 50)  {
+					player->caps.strength -= 10;
+					
+					if (player->caps.strength < 0)
+						player->caps.strength = 0;
+				} else if (player->caps.dexterity >= 60) {
+					player->caps.strength += 10;
+
+					if (player->caps.strength > 100)
+						player->caps.strength = 100;
+				
+				}
+				break;
+			}
+			case CITY: {
+				
+				if (player->caps.smartness > 60) {		
+					player->caps.magicSkills += 10;
+					
+					if (player->caps.magicSkills > 100)
+						player->caps.magicSkills = 100;
+					
+				} else if (player->caps.smartness <= 50) {
+					player->caps.dexterity -= 10;
+					
+					if (player->caps.dexterity < 0)
+						player->caps.magicSkills = 0;
+				}
+				break;
+			}
+		}		
+	}
+	
+	
+} // end of updateCapabilities() function
