@@ -107,15 +107,12 @@ void setPlayerPositions(unsigned int numSlots, struct SLOT *gameSlots, unsigned 
 void sortCap(int i);
 void sortPlayers();
 int getCapabilitySum(struct PLAYER *player);
-<<<<<<< HEAD
-void nextTurn(int position, struct PLAYER *player, int numPlayers);
-void attack(int position, struct PLAYER *player, int numPlayers);
-=======
-void nextTurn(unsigned int numSlots, struct SLOT *gameSlots, struct PLAYER *player);
+void nextTurn(unsigned int numSlots, unsigned numPlayers, struct SLOT *gameSlots, struct PLAYER *player);
 void move(unsigned int numSlots, struct SLOT *gameSlots, struct PLAYER *player);
+void attack(struct PLAYER *player,unsigned int numPlayers);
 void updateCapabilities(struct SLOT *gameSlots, struct PLAYER *player, size_t nextSlotType);
 
->>>>>>> 89949c8872fecc55a2051f824f192caa7c08c9c1
+
 // main function
 int main(void) {
 
@@ -154,7 +151,7 @@ int main(void) {
 	setPlayerPositions(numSlots, gameSlots, numPlayers, num);
 	// start the game - Player1 -> PlayerN will have a turn
 	for (i = 0; i < numPlayers; i++) {		
-		nextTurn(numSlots, gameSlots, &num[i]);
+		nextTurn(numSlots,numPlayers, gameSlots, &num[i]);
 	}
 	
 	// print out the each player's name and hitpoints
@@ -226,16 +223,7 @@ char* getSlotString(enum SLOT_TYPES slotType) {
 	}
 	return slotString;	
 }
-/* Function Name: sortPlayers
- * Description:
- * 				Set up the struct of players. 
- *	Parameters:
- *		N/A
- *
- *	Returns:
- *		N/A
- */
- 
+
  
 /* Function Name: 	setPlayerPositions
  * Description:
@@ -285,7 +273,16 @@ void setPlayerPositions(unsigned int numSlots, struct SLOT *gameSlots, unsigned 
 	}
 	
 }
-
+/* Function Name: sortPlayers
+ * Description:
+ * 		Set up the struct of players. 
+ *	Parameters:
+ *		numPlayers: pointer to int numPlayer - returns the user enter number of players in game
+ *
+ *	Returns:
+ *		N/A
+ */
+ 
 
 void sortPlayers(int *numPlayers)
 {
@@ -368,7 +365,7 @@ void sortPlayers(int *numPlayers)
 }
 /* Function Name: sortCap
  * Description:
- * 				Assigns values to the player capabilities. 
+ * 		Assigns values to the player capabilities. 
  *	Parameters:
  *		integer i which represents the player number (i.e. 1st player, 2nd player, etc.)
  *
@@ -461,11 +458,8 @@ int getCapabilitySum(struct PLAYER *player) {
  *	Returns:
  *		N/A
  */
-<<<<<<< HEAD
-void nextTurn(int position, struct PLAYER *player, int numPlayers) {
-=======
-void nextTurn(unsigned int numSlots, struct SLOT *gameSlots, struct PLAYER *player) {
->>>>>>> 89949c8872fecc55a2051f824f192caa7c08c9c1
+
+void nextTurn(unsigned int numSlots, unsigned numPlayers, struct SLOT *gameSlots, struct PLAYER *player) {
 	
 	// used in Move()
 	size_t	
@@ -484,7 +478,7 @@ void nextTurn(unsigned int numSlots, struct SLOT *gameSlots, struct PLAYER *play
 	switch (turnChoice) {
 		
 		case 1: {
-			attack(position, player, numPlayers);
+			attack(player, numPlayers);
 			break;
 		}
 		case 2: {	
@@ -494,39 +488,79 @@ void nextTurn(unsigned int numSlots, struct SLOT *gameSlots, struct PLAYER *play
 	}
 	
 } // end of nextTurn() function
-<<<<<<< HEAD
-void attack(int position, struct PLAYER *player, int numPlayers)
+
+/* Function Name: attack
+ * Description:
+ * 				
+ *	Parameters:
+ *		PLAYER :
+ *
+ *	Returns:
+ *		N/A
+ */
+void attack(struct PLAYER *player,unsigned int numPlayers)
 {
-	size_t i;
-	unsigned int distToNextPlayer[2], playerNum, choice;
+	size_t
+		i,
+		j;
+		
+	bool 
+		validChoice = false;
+		
+	unsigned int
+		distToNextPlayer[numPlayers-1],
+		choice =0,
+		distance,
+		attacked;
 	
 	
-	for(i=0;i<=numPlayers;i++)
+	for(i=0;i<numPlayers;i++)
 	{
-		distToNextPlayer[i]= position - /*num[i].position*/;
+		distToNextPlayer[i]= player->position - num[i].position;
+	}
 	
-		playerNum = i;
-		
-		distToNextPlayer[i+1]= position - /*num[i+1].position*/;
-		
-		if(distToNextPlayer[i]<distToNextPlayer[i+1])
+	for(i=0;i<numPlayers-1;i++)
+	{
+		distance=distToNextPlayer[0];
+		if(distToNextPlayer[0]<distToNextPlayer[i])
 		{
-			playerNum= i+1;
-		}
-		else if(distToNextPlayer[i]==distToNextPlayer[i+1])
-		{
-			printf("Which player do you want to attack.\n1)%s\n2)%s", num[i].name, num[i+].name);
-			scanf("%d", choice);
-			
-			
+			distance=distToNextPlayer[i];
+			attacked=i+2; //because distToNextPlayer[i] refers to distance from player i+2
 		}
 	}
 	
+	j=attacked;//holds index of player for reference later.
+	for(i=0;i<numPlayers-1 && validChoice;i++)
+	{
+		if(distance == distToNextPlayer[i])
+		{
+			do{
+				printf("\nYou are between two players.Do you want to attack 1)%s or 2)%s : ",num[j].name ,num[i].name);
+				scanf("%d", choice);
+				
+				if(choice == 1)
+				{
+					validChoice = true;
+				}
+				else if(choice == 2)
+				{
+					attacked = i+2;
+					validChoice = true;
+				}
+			}while(validChoice);
+		}
+	}
 	
+	if((num[attacked].caps.strength)<=70)
+	{
+		num[attacked].life_pts-=(0.5*(num[attacked].caps.strength));
+	}
+	else{
+		player->life_pts-=(0.3*(player->caps.strength));
+	}	
 	
-	
-}
-=======
+}// end of attack() function.
+
 
 
 /* Function Name: move
@@ -715,4 +749,4 @@ void updateCapabilities(struct SLOT *gameSlots, struct PLAYER *player, size_t ne
 	
 	
 } // end of updateCapabilities() function
->>>>>>> 89949c8872fecc55a2051f824f192caa7c08c9c1
+
