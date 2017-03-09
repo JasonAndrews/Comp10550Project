@@ -105,8 +105,8 @@ char *getSlotString(enum SLOT_TYPES slotType);
 void sortCap(int i);
 void sortPlayers();
 int getCapabilitySum(struct PLAYER *player);
-void nextTurn(int position, struct PLAYER *player);
-
+void nextTurn(int position, struct PLAYER *player, int numPlayers);
+void attack(int position, struct PLAYER *player, int numPlayers);
 // main function
 int main(void) {
 
@@ -386,7 +386,7 @@ int getCapabilitySum(struct PLAYER *player) {
  *	Returns:
  *		N/A
  */
-void nextTurn(int position, struct PLAYER *player) {
+void nextTurn(int position, struct PLAYER *player, int numPlayers) {
 	
 	// used in Move()
 	size_t	
@@ -395,8 +395,7 @@ void nextTurn(int position, struct PLAYER *player) {
 	
 	// used in Attack()
 	unsigned int 
-		turnChoice,
-		distToNextPlayer;
+		turnChoice;
 
 	
 	printf("\n%s - it is your turn.\nWhat do you want to do?\n1. Attack.\n2. Move.\nYour choice: ", player->name);
@@ -406,7 +405,7 @@ void nextTurn(int position, struct PLAYER *player) {
 	switch (turnChoice) {
 		
 		case 1: {
-			//Attack();
+			attack(position, player, numPlayers);
 			break;
 		}
 		case 2: {
@@ -416,3 +415,34 @@ void nextTurn(int position, struct PLAYER *player) {
 	}
 	
 } // end of nextTurn() function
+void attack(int position, struct PLAYER *player, int numPlayers)
+{
+	size_t i;
+	unsigned int distToNextPlayer[2], playerNum, choice;
+	
+	
+	for(i=0;i<=numPlayers;i++)
+	{
+		distToNextPlayer[i]= position - /*num[i].position*/;
+	
+		playerNum = i;
+		
+		distToNextPlayer[i+1]= position - /*num[i+1].position*/;
+		
+		if(distToNextPlayer[i]<distToNextPlayer[i+1])
+		{
+			playerNum= i+1;
+		}
+		else if(distToNextPlayer[i]==distToNextPlayer[i+1])
+		{
+			printf("Which player do you want to attack.\n1)%s\n2)%s", num[i].name, num[i+].name);
+			scanf("%d", choice);
+			
+			
+		}
+	}
+	
+	
+	
+	
+}
