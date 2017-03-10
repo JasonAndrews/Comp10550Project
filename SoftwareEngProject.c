@@ -111,7 +111,7 @@ void nextTurn(unsigned int numSlots, unsigned numPlayers, struct SLOT *gameSlots
 void move(unsigned int numSlots, struct SLOT *gameSlots, struct PLAYER *player);
 void attack(struct PLAYER *player,unsigned int numPlayers);
 void updateCapabilities(struct SLOT *gameSlots, struct PLAYER *player, size_t nextSlotType);
-
+char *getPtypeString(enum type playerType);
 
 // main function
 int main(void) {
@@ -152,6 +152,12 @@ int main(void) {
 	// start the game - Player1 -> PlayerN will have a turn
 	for (i = 0; i < numPlayers; i++) {		
 		nextTurn(numSlots,numPlayers, gameSlots, &num[i]);
+	}
+	
+	//prints out <player name>( <player Type> , <life_pts> )
+	for(i = 0;i < numPlayers; i++)
+	{
+		printf("%s(%s,%d)",num[i].name ,getPtypeString(num[i].playerType), num[i].life_pts);
 	}
 	
 	// print out the each player's name and hitpoints
@@ -222,6 +228,44 @@ char* getSlotString(enum SLOT_TYPES slotType) {
 		}
 	}
 	return slotString;	
+}
+
+/* Function Name: 	getPtypeString
+ * Description:
+ * 		gets name of slot. 
+ *	Parameters:
+ *		
+ *
+ *	Returns:
+ *		
+ */
+char* getPtypeString(enum type playerType) {
+	
+	char *typeString = "";
+	
+	switch (playerType) {
+		case Elf: {
+			strcpy(typeString, "Elf");
+			break;
+		}
+		case Human: {
+			strcpy(typeString, "Human");
+			break;
+		}
+		case Ogre: {
+			strcpy(typeString, "Ogre");
+			break;
+		}
+		case Wizard:{
+			strcpy(typeString, "Wizard");
+			break;
+		}
+		default:{
+			strcpy(typeString, "ERROR");
+			break;
+		}
+	}
+	return typeString;	
 }
 
  
@@ -513,12 +557,12 @@ void attack(struct PLAYER *player,unsigned int numPlayers)
 		distance,
 		attacked;
 	
-	
+	//fills array distToNextPlayer with distance to relevant players start with player 2
 	for(i=0;i<numPlayers;i++)
 	{
 		distToNextPlayer[i]= player->position - num[i].position;
 	}
-	
+	//scans array for largest distance and the corresponding player
 	for(i=0;i<numPlayers-1;i++)
 	{
 		distance=distToNextPlayer[0];
@@ -530,6 +574,7 @@ void attack(struct PLAYER *player,unsigned int numPlayers)
 	}
 	
 	j=attacked;//holds index of player for reference later.
+	//check to see if any other player is the same distance away and make user choose between them.
 	for(i=0;i<numPlayers-1 && validChoice;i++)
 	{
 		if(distance == distToNextPlayer[i])
