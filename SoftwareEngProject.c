@@ -24,8 +24,6 @@
 #include <string.h>
 #include <stdbool.h>
 
-#define 	PLAYERS_FILE_PATH 	"resources\\players.txt"
-#define 	SLOTS_FILE_PATH 	"resources\\slots.txt"
 
 #define 	MAX_COLUMN_SIZE		100 // the max column size of each string in the 2D arrays
 
@@ -45,10 +43,7 @@ enum type {
 	Wizard
 };
 
-/*
-* The different types available for a slot
-
-*/
+// The different types available for a slot
 enum SLOT_TYPES {
 	LEVEL_GROUND = 1,
 	HILL = 2,
@@ -56,16 +51,6 @@ enum SLOT_TYPES {
 	
 };
 
-/* 
-*	This struct hold the players capabilities info
-	
-	Capabilities: 
-		Smartness, 
-		Strength, 
-		Magic Skills, 
-		Luck,
-		Dexterity
-*/
 struct PLAYER_CAPABILITIES {
 	int 
 		smartness,
@@ -149,26 +134,19 @@ int main(void) {
 	
 	setupSlots(numSlots, gameSlots);
 	setPlayerPositions(numSlots, gameSlots, numPlayers, num);
+	
 	// start the game - Player1 -> PlayerN will have a turn
 	for (i = 0; i < numPlayers; i++) {		
 		nextTurn(numSlots, numPlayers, gameSlots, &num[i]);
 	}
 	
 	printf("\n\nGame Over!\nHere are the end-game stats for every player!\n");
-	printf("\nnumPlayers = %d", numPlayers);
 	//prints out <player name>( <player Type> , <life_pts> )
 	for(i = 0; i < numPlayers; i++)
 	{
 		printf("\n%s (%s, %d)", num[i].name, getPtypeString(num[i].playerType), num[i].life_pts);
 	}
 	
-	/*
-	// print out the each player's name and hitpoints
-	for (i = 0; i < numPlayers; i++) {
-		printf("\n%d | (%s, %d, %d, %d, %d, %d, %d)", (i+1), num[i].name, num[i].life_pts, 
-			num[i].caps.smartness, num[i].caps.strength, num[i].caps.magicSkills, num[i].caps.luck, num[i].caps.dexterity);
-	}
-	*/
 	printf("\n\nEND OF APP EXECUTION!\n");
 
 	return EXIT_SUCCESS;
@@ -193,7 +171,6 @@ void setupSlots(unsigned int numSlots, struct SLOT *gameSlots) {
 		gameSlots[i].slotType = (rand() % 3 /* number of different slots.. */) + 1;
 		gameSlots[i].player = NULL; 
 		
-		printf("\nSlot at index %d is of type %s", i, getSlotString(gameSlots[i].slotType));
 	}
 	
 }
@@ -216,22 +193,18 @@ char *getSlotString(enum SLOT_TYPES slotType) {
 	
 	switch (slotType) {
 		case LEVEL_GROUND: {
-			//strcpy(slotString, "Level Ground");
 			slotString = "Level Ground";
 			break;
 		}
 		case HILL: {
-			//strcpy(slotString, "Hill");
 			slotString = "Hill";
 			break;
 		}
 		case CITY: {
-			//strcpy(slotString, "City");
 			slotString = "City";
 			break;
 		}
 		default: {
-			//strcpy(slotString, "Invalid..");
 			slotString = "ERROR";
 			break;
 		}
@@ -254,33 +227,27 @@ char* getPtypeString(enum type playerType) {
 	
 	switch (playerType) {
 		case Elf: {
-			//strcpy(typeString, "Elf");
 			typeString = "Elf";
 			break;
 		}
 		case Human: {
-			//strcpy(typeString, "Human");
 			typeString = "Human";
 			break;
 		}
 		case Ogre: {
 			typeString = "Ogre";
-			//strcpy(typeString, "Ogre");
 			break;
 		}
 		case Wizard:{
-			//strcpy(typeString, "Wizard");
 			typeString = "Wizard";
 			break;
 		}
 		default:{
 			typeString = "ERROR";
-			//strcpy(typeString, "ERROR");
 			break;
 		}
 	}
 	
-	printf("\ngetPtypeString -> Type ID:  %d | return value: %s", (int) playerType, typeString);
 	return typeString;	
 }
 
@@ -581,7 +548,6 @@ void attack(struct PLAYER *gamePlayers, struct PLAYER *player, unsigned int numP
 		// if the selected player's position MINUS the currently iterated player's position - update minDist
 		if (abs(player->position - num[i].position) < minDist) {
 			minDist = abs(player->position - num[i].position);
-			printf("New Min Dist = %d", minDist);
 		}
 	}
 	
@@ -599,10 +565,6 @@ void attack(struct PLAYER *gamePlayers, struct PLAYER *player, unsigned int numP
 		
 	}
 	
-	for (i = 0; i < numClosePlayers; i++) {
-		printf("\n%d - %s", (i + 1), closeByPlayers[i].name);
-		
-	}
 	
 	attackedPlayer = 0; // set the default target as element 0 of closeByPlayers
 	
@@ -641,69 +603,6 @@ void attack(struct PLAYER *gamePlayers, struct PLAYER *player, unsigned int numP
 	
 	printf("\nYou ATTACKED player %s!", closeByPlayers[attackedPlayer].name);
 	
-/*
-	size_t
-		i,
-		j;
-		
-	bool 
-		validChoice = false;
-		
-	unsigned int
-		distToNextPlayer[numPlayers-1],
-		choice =0,
-		distance,
-		attacked;
-	
-	
-	
-	//fills array distToNextPlayer with distance to relevant players start with player 2
-	for(i=0;i<numPlayers;i++)
-	{
-		distToNextPlayer[i]= player->position - num[i].position;
-	}
-	//scans array for largest distance and the corresponding player
-	for(i=0;i<numPlayers-1;i++)
-	{
-		distance=distToNextPlayer[0];
-		if(distToNextPlayer[0]<distToNextPlayer[i])
-		{
-			distance=distToNextPlayer[i];
-			attacked=i+2; //because distToNextPlayer[i] refers to distance from player i+2
-		}
-	}
-	
-	j=attacked;//holds index of player for reference later.
-	//check to see if any other player is the same distance away and make user choose between them.
-	for(i=0;i<numPlayers-1 && validChoice;i++)
-	{
-		if(distance == distToNextPlayer[i])
-		{
-			do{
-				printf("\nYou are between two players.Do you want to attack 1)%s or 2)%s : ",num[j].name ,num[i].name);
-				scanf("%d", choice);
-				
-				if(choice == 1)
-				{
-					validChoice = true;
-				}
-				else if(choice == 2)
-				{
-					attacked = i+2;
-					validChoice = true;
-				}
-			}while(validChoice);
-		}
-	}
-	
-	if((num[attacked].caps.strength)<=70)
-	{
-		num[attacked].life_pts-=(0.5*(num[attacked].caps.strength));
-	}
-	else{
-		player->life_pts-=(0.3*(player->caps.strength));
-	}	
-*/	
 }// end of attack() function.
 
 
