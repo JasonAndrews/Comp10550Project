@@ -96,18 +96,15 @@ struct SLOT {
 	enum SLOT_TYPES slotType;
 };
 
-//global variable used in sortPlayers (PLANNING ON CHANGING IT FROM A GLOBAL TO A LOCAL SOMEHOW)
-struct PLAYER num[MAX_PLAYERS];
-
 
 // function prototypes
 void setupSlots(unsigned int numSlots, struct SLOT *gameSlots);
 char *getSlotString(enum SLOT_TYPES slotType);
 void setPlayerPositions(unsigned int numSlots, struct SLOT *gameSlots, unsigned int numPlayers, struct PLAYER *gamePlayers);
-void sortCap(int i);
-void sortPlayers();
+void sortCap(struct PLAYER *gamePlayers, int i);
+void sortPlayers(struct PLAYER *gamePlayers, int *numPlayers);
 int getCapabilitySum(struct PLAYER *player);
-void nextTurn(unsigned int numSlots, unsigned numPlayers, struct SLOT *gameSlots, struct PLAYER *player);
+void nextTurn(unsigned int numSlots, struct SLOT *gameSlots, unsigned numPlayers, struct PLAYER *gamePlayers, struct PLAYER *player);
 void move(unsigned int numSlots, struct SLOT *gameSlots, struct PLAYER *player);
 void attack(struct PLAYER gamePlayers[], struct PLAYER *player, unsigned int numPlayers);
 void updateCapabilities(struct SLOT *gameSlots, struct PLAYER *player, size_t nextSlotType);
@@ -122,7 +119,10 @@ int main(void) {
 		numSlots, // the number of slots in the game, entered by the user
 		numPlayers, // the number of players in the game, entered by the user
 		turnChoice; // the 
-		
+	
+	//global variable used in sortPlayers (PLANNING ON CHANGING IT FROM A GLOBAL TO A LOCAL SOMEHOW)
+	struct PLAYER 
+				gamePlayers[MAX_PLAYERS];	
 	struct SLOT
 				*gameSlots; // a pointer to a struct SLOT object (the first one in the array)
 				
@@ -131,7 +131,7 @@ int main(void) {
 	
 	srand((unsigned) time(&currentTime));
 	
-	sortPlayers(&numPlayers);
+	sortPlayers(gamePlayers, &numPlayers);
 	
 	
 	do {
@@ -148,27 +148,20 @@ int main(void) {
 	gameSlots = (struct SLOT * const) malloc(sizeof(struct SLOT) * numSlots);
 	
 	setupSlots(numSlots, gameSlots);
-	setPlayerPositions(numSlots, gameSlots, numPlayers, num);
+	setPlayerPositions(numSlots, gameSlots, numPlayers, gamePlayers);
 	// start the game - Player1 -> PlayerN will have a turn
 	for (i = 0; i < numPlayers; i++) {		
-		nextTurn(numSlots, numPlayers, gameSlots, &num[i]);
+		nextTurn(numSlots, gameSlots, numPlayers, gamePlayers, &gamePlayers[i]);
 	}
 	
 	printf("\n\nGame Over!\nHere are the end-game stats for every player!\n");
-	printf("\nnumPlayers = %d", numPlayers);
-	//prints out <player name>( <player Type> , <life_pts> )
+	
+	//prints out <player name> (<player Type>, <life_pts>)
 	for(i = 0; i < numPlayers; i++)
 	{
-		printf("\n%s (%s, %d)", num[i].name, getPtypeString(num[i].playerType), num[i].life_pts);
+		printf("\n%s (%s, %d)", gamePlayers[i].name, getPtypeString(gamePlayers[i].playerType), gamePlayers[i].life_pts);
 	}
-	
-	/*
-	// print out the each player's name and hitpoints
-	for (i = 0; i < numPlayers; i++) {
-		printf("\n%d | (%s, %d, %d, %d, %d, %d, %d)", (i+1), num[i].name, num[i].life_pts, 
-			num[i].caps.smartness, num[i].caps.strength, num[i].caps.magicSkills, num[i].caps.luck, num[i].caps.dexterity);
-	}
-	*/
+
 	printf("\n\nEND OF APP EXECUTION!\n");
 
 	return EXIT_SUCCESS;
@@ -280,7 +273,6 @@ char* getPtypeString(enum type playerType) {
 		}
 	}
 	
-	printf("\ngetPtypeString -> Type ID:  %d | return value: %s", (int) playerType, typeString);
 	return typeString;	
 }
 
@@ -344,7 +336,7 @@ void setPlayerPositions(unsigned int numSlots, struct SLOT *gameSlots, unsigned 
  */
  
 
-void sortPlayers(int *numPlayers)
+void sortPlayers(struct PLAYER *gamePlayers, int *numPlayers)
 {
 	int 
 		i=0,
@@ -370,12 +362,12 @@ void sortPlayers(int *numPlayers)
 			printf("\nPlease enter player name (20 characers max.)\n");
 			fflush(stdin);
 			fflush(stdout);
-			fgets(num[i].name, 20, stdin);
+			fgets(gamePlayers[i].name, 20, stdin);
 			
 			// remove the NEWLINE character from the player's name.
-			for(j = 0; num[i].name[j] != '\0'; j++) { 				
-				if (num[i].name[j] == '\n') {
-					num[i].name[j] = '\0'; // set the current character as the EOS character
+			for(j = 0; gamePlayers[i].name[j] != '\0'; j++) { 				
+				if (gamePlayers[i].name[j] == '\n') {
+					gamePlayers[i].name[j] = '\0'; // set the current character as the EOS character
 					break;
 				}
 			}			
@@ -391,19 +383,19 @@ void sortPlayers(int *numPlayers)
 			switch(choice)
 			{
 			case 1:
-			num[i].playerType=Elf;
+			gamePlayers[i].playerType=Elf;
 			break;
 
 			case 2:
-			num[i].playerType=Human;
+			gamePlayers[i].playerType=Human;
 			break;
 
 			case 3:
-			num[i].playerType=Ogre;
+			gamePlayers[i].playerType=Ogre;
 			break;
 
 			case 4:
-			num[i].playerType=Wizard;
+			gamePlayers[i].playerType=Wizard;
 			break;
 
 			default:
@@ -412,9 +404,9 @@ void sortPlayers(int *numPlayers)
 			
 			if (choice >= 1 && choice <= 4) {
 				
-				num[i].life_pts = MAX_PTS;				
+				gamePlayers[i].life_pts = MAX_PTS;				
 				
-				sortCap(i);			
+				sortCap(gamePlayers, i);			
 				
 				i++;
 			}
@@ -432,24 +424,24 @@ void sortPlayers(int *numPlayers)
  *	Returns:
  *		N/A
  */
-void sortCap(int i)
+void sortCap(struct PLAYER *gamePlayers, int i)
 {
 	int sum,j;
 	bool valid;
 	time_t currentTime;
 	srand((unsigned) time(&currentTime));
 	
-	if(num[i].playerType==Human)
+	if(gamePlayers[i].playerType==Human)
 	{
 		do {
 			
-			num[i].caps.smartness = 1 + (rand() % 100);
-			num[i].caps.luck = 1 + (rand() % 100);
-			num[i].caps.strength = 1 + (rand() % 100);
-			num[i].caps.magicSkills = 1 + (rand() % 100);
-			num[i].caps.dexterity= 1 + (rand() % 100);
+			gamePlayers[i].caps.smartness = 1 + (rand() % 100);
+			gamePlayers[i].caps.luck = 1 + (rand() % 100);
+			gamePlayers[i].caps.strength = 1 + (rand() % 100);
+			gamePlayers[i].caps.magicSkills = 1 + (rand() % 100);
+			gamePlayers[i].caps.dexterity= 1 + (rand() % 100);
 			
-			sum = getCapabilitySum(&num[i]);
+			sum = getCapabilitySum(&gamePlayers[i]);
 			
 			if(sum < 300)
 				valid = true;
@@ -459,16 +451,16 @@ void sortCap(int i)
 		} while (!valid);
 	}
 		
-	if(num[i].playerType==Ogre)
+	if(gamePlayers[i].playerType==Ogre)
 	{
 		do
 		{
-			num[i].caps.magicSkills = 0;
-			num[i].caps.smartness = rand()%20;
-			num[i].caps.strength = 80+rand()%20;
-			num[i].caps.dexterity = 80+rand()%20;
+			gamePlayers[i].caps.magicSkills = 0;
+			gamePlayers[i].caps.smartness = rand()%20;
+			gamePlayers[i].caps.strength = 80+rand()%20;
+			gamePlayers[i].caps.dexterity = 80+rand()%20;
 			
-			if((num[i].caps.smartness + num[i].caps.luck) < 50)
+			if((gamePlayers[i].caps.smartness + gamePlayers[i].caps.luck) < 50)
 				valid = true;
 			else
 				valid = !false;
@@ -476,23 +468,23 @@ void sortCap(int i)
 		} while(!valid);
 	}
 		
-	if(num[i].playerType==Elf)
+	if(gamePlayers[i].playerType==Elf)
 	{
-		num[i].caps.luck = 60+rand()%40;
-		num[i].caps.smartness = 70+rand()%30;
-		num[i].caps.strength = 1+rand()%49;
-		num[i].caps.magicSkills = 51+rand()%29;
-		num[i].caps.dexterity = 1+rand()%99;
+		gamePlayers[i].caps.luck = 60+rand()%40;
+		gamePlayers[i].caps.smartness = 70+rand()%30;
+		gamePlayers[i].caps.strength = 1+rand()%49;
+		gamePlayers[i].caps.magicSkills = 51+rand()%29;
+		gamePlayers[i].caps.dexterity = 1+rand()%99;
 	}
 	
-	if(num[i].playerType==Wizard)
+	if(gamePlayers[i].playerType==Wizard)
 	{
 		
-		num[i].caps.luck = 50+rand()%50;
-		num[i].caps.smartness = 90+rand()%10;
-		num[i].caps.strength = 1+rand()%19;
-		num[i].caps.magicSkills = 80+rand()%20;
-		num[i].caps.dexterity = 1+rand()%99;
+		gamePlayers[i].caps.luck = 50+rand()%50;
+		gamePlayers[i].caps.smartness = 90+rand()%10;
+		gamePlayers[i].caps.strength = 1+rand()%19;
+		gamePlayers[i].caps.magicSkills = 80+rand()%20;
+		gamePlayers[i].caps.dexterity = 1+rand()%99;
 	}
 }
 
@@ -519,7 +511,7 @@ int getCapabilitySum(struct PLAYER *player) {
  *		N/A
  */
 
-void nextTurn(unsigned int numSlots, unsigned numPlayers, struct SLOT *gameSlots, struct PLAYER *player) {
+void nextTurn(unsigned int numSlots, struct SLOT *gameSlots, unsigned numPlayers, struct PLAYER *gamePlayers, struct PLAYER *player) {
 	
 	// used in Move()
 	size_t	
@@ -538,7 +530,7 @@ void nextTurn(unsigned int numSlots, unsigned numPlayers, struct SLOT *gameSlots
 	switch (turnChoice) {
 		
 		case 1: {
-			attack(num, player, numPlayers);
+			attack(gamePlayers, player, numPlayers);
 			break;
 		}
 		case 2: {	
@@ -579,8 +571,8 @@ void attack(struct PLAYER *gamePlayers, struct PLAYER *player, unsigned int numP
 		}
 		
 		// if the selected player's position MINUS the currently iterated player's position - update minDist
-		if (abs(player->position - num[i].position) < minDist) {
-			minDist = abs(player->position - num[i].position);
+		if (abs(player->position - gamePlayers[i].position) < minDist) {
+			minDist = abs(player->position - gamePlayers[i].position);
 			printf("New Min Dist = %d", minDist);
 		}
 	}
@@ -592,8 +584,8 @@ void attack(struct PLAYER *gamePlayers, struct PLAYER *player, unsigned int numP
 		}
 		
 		// if the selected player's position MINUS the currently iterated player's position - update minDist
-		if (abs(player->position - num[i].position) == minDist) {
-			closeByPlayers[numClosePlayers] = num[i];
+		if (abs(player->position - gamePlayers[i].position) == minDist) {
+			closeByPlayers[numClosePlayers] = gamePlayers[i];
 			numClosePlayers++;
 		}
 		
@@ -631,9 +623,9 @@ void attack(struct PLAYER *gamePlayers, struct PLAYER *player, unsigned int numP
 	
 	}
 
-	if((num[attackedPlayer].caps.strength)<=70)
+	if((gamePlayers[attackedPlayer].caps.strength)<=70)
 	{
-		num[attackedPlayer].life_pts-=(0.5*(num[attackedPlayer].caps.strength));
+		gamePlayers[attackedPlayer].life_pts-=(0.5*(gamePlayers[attackedPlayer].caps.strength));
 	}
 	else{
 		player->life_pts-=(0.3*(player->caps.strength));
@@ -641,69 +633,6 @@ void attack(struct PLAYER *gamePlayers, struct PLAYER *player, unsigned int numP
 	
 	printf("\nYou ATTACKED player %s!", closeByPlayers[attackedPlayer].name);
 	
-/*
-	size_t
-		i,
-		j;
-		
-	bool 
-		validChoice = false;
-		
-	unsigned int
-		distToNextPlayer[numPlayers-1],
-		choice =0,
-		distance,
-		attacked;
-	
-	
-	
-	//fills array distToNextPlayer with distance to relevant players start with player 2
-	for(i=0;i<numPlayers;i++)
-	{
-		distToNextPlayer[i]= player->position - num[i].position;
-	}
-	//scans array for largest distance and the corresponding player
-	for(i=0;i<numPlayers-1;i++)
-	{
-		distance=distToNextPlayer[0];
-		if(distToNextPlayer[0]<distToNextPlayer[i])
-		{
-			distance=distToNextPlayer[i];
-			attacked=i+2; //because distToNextPlayer[i] refers to distance from player i+2
-		}
-	}
-	
-	j=attacked;//holds index of player for reference later.
-	//check to see if any other player is the same distance away and make user choose between them.
-	for(i=0;i<numPlayers-1 && validChoice;i++)
-	{
-		if(distance == distToNextPlayer[i])
-		{
-			do{
-				printf("\nYou are between two players.Do you want to attack 1)%s or 2)%s : ",num[j].name ,num[i].name);
-				scanf("%d", choice);
-				
-				if(choice == 1)
-				{
-					validChoice = true;
-				}
-				else if(choice == 2)
-				{
-					attacked = i+2;
-					validChoice = true;
-				}
-			}while(validChoice);
-		}
-	}
-	
-	if((num[attacked].caps.strength)<=70)
-	{
-		num[attacked].life_pts-=(0.5*(num[attacked].caps.strength));
-	}
-	else{
-		player->life_pts-=(0.3*(player->caps.strength));
-	}	
-*/	
 }// end of attack() function.
 
 
